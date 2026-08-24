@@ -192,6 +192,37 @@
       border: 1px solid rgba(99, 102, 241, 0.5);
     }
 
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 50;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(99, 102, 241, 0.3);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-indicator p {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .meta-card {
       background: var(--panel-bg);
       backdrop-filter: var(--panel-blur);
@@ -512,6 +543,10 @@
         <a href="https://t.me/+AreyM6apVFAzZDk9" target="_blank" class="watermark-overlay">@STREAMXCRICK</a>
         <video id="player" playsinline crossorigin></video>
         <div id="errorMessage" class="error-message" style="display: none;"></div>
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+          <div class="loading-spinner"></div>
+          <p>Loading stream...</p>
+        </div>
       </div>
 
       <div class="meta-card">
@@ -568,8 +603,15 @@ const CONFIG = {
   telegramLink: "https://t.me/+AreyM6apVFAzZDk9",
   channelName: "SONY LIV",
   languageName: "HINDI",
+  // Primary streams
   streamUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/Ten_3_MOB/WDVLive/index.mpd",
   hlsUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/Ten_3_MOB/WDVLive/index.m3u8",
+  // Fallback streams (alternative Sony channels)
+  fallbackStreams: [
+    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.m3u8",
+    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyTen1_MOB/WDVLive/index.m3u8",
+    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonySix_MOB/WDVLive/index.m3u8"
+  ],
   cookieUrl: "https://allrounder2-0.pages.dev/api/Sony-3.json",
   keyId: "68318f7c97c55ba6ab8d0398a88fed3e",
   key: "d312fb3325b4eb9462b4a0d2b6794adf"
@@ -581,12 +623,27 @@ let currentTokenValue = "";
 
 function showError(message) {
   const errorEl = document.getElementById("errorMessage");
+  const loadingEl = document.getElementById("loadingIndicator");
   if (errorEl) {
     errorEl.textContent = message;
     errorEl.style.display = "block";
+    if (loadingEl) loadingEl.style.display = "none";
+    
+    // Auto-hide after 8 seconds
     setTimeout(() => {
       errorEl.style.display = "none";
-    }, 5000);
+    }, 8000);
+  }
+}
+
+function showLoading(show = true) {
+  const loadingEl = document.getElementById("loadingIndicator");
+  const errorEl = document.getElementById("errorMessage");
+  if (loadingEl) {
+    loadingEl.style.display = show ? "flex" : "none";
+  }
+  if (errorEl && show) {
+    errorEl.style.display = "none";
   }
 }
 
@@ -701,15 +758,54 @@ async function startHLSEngine() {
   
   // Use native HLS for iOS Safari, Shaka for others
   if (isIOS) {
-    // iOS native HLS approach
-    video.src = CONFIG.hlsUrl;
-    video.playsInline = true;
-    video.muted = true;
+    // iOS native HLS approach with fallback
+    let currentStreamIndex = 0;
+    const streams = [CONFIG.hlsUrl, ...CONFIG.fallbackStreams];
     
-    // Error handling for iOS
+    const loadStream = async (streamUrl) => {
+      console.log("Attempting to load stream:", streamUrl);
+      showLoading(true);
+      video.src = streamUrl;
+      video.playsInline = true;
+      video.muted = true;
+      
+      try {
+        await video.play();
+        if (!plyrInstance) {
+          initPlyr(video, null);
+        }
+        showLoading(false);
+        console.log("Stream loaded successfully:", streamUrl);
+        return true;
+      } catch (err) {
+        console.error("Failed to load stream:", streamUrl, err);
+        showLoading(false);
+        return false;
+      }
+    };
+    
+    // Unmute on interaction
+    const enableAudio = () => {
+      video.muted = false;
+      video.volume = 1;
+      document.removeEventListener("click", enableAudio);
+      document.removeEventListener("touchstart", enableAudio);
+    };
+    document.addEventListener("click", enableAudio);
+    document.addEventListener("touchstart", enableAudio);
+    
+    // Error handling for iOS with fallback
     video.addEventListener('error', (error) => {
       console.error('iOS video error:', error);
-      showError("Video playback error. Please refresh the page.");
+      showLoading(false);
+      // Try next fallback stream
+      if (currentStreamIndex < streams.length - 1) {
+        currentStreamIndex++;
+        console.log("Trying next fallback stream:", streams[currentStreamIndex]);
+        loadStream(streams[currentStreamIndex]);
+      } else {
+        showError("Video playback error. Please refresh the page.");
+      }
     });
     
     // Network change handling for iOS
@@ -725,22 +821,33 @@ async function startHLSEngine() {
       showError("Network connection lost. Please check your internet.");
     });
     
-    // Unmute on interaction
-    const enableAudio = () => {
-      video.muted = false;
-      video.volume = 1;
-      document.removeEventListener("click", enableAudio);
-      document.removeEventListener("touchstart", enableAudio);
-    };
-    document.addEventListener("click", enableAudio);
-    document.addEventListener("touchstart", enableAudio);
+    // Try primary stream first
+    let streamLoaded = await loadStream(streams[currentStreamIndex]);
     
-    try {
-      await video.play();
-      initPlyr(video, null);
-    } catch (err) {
-      console.error("iOS HLS error:", err);
-      showError("Stream loading failed. Please try again.");
+    // If primary fails, try fallback streams
+    if (!streamLoaded && CONFIG.fallbackStreams.length > 0) {
+      for (let i = 0; i < CONFIG.fallbackStreams.length; i++) {
+        currentStreamIndex = i + 1;
+        console.log("Trying fallback stream:", streams[currentStreamIndex]);
+        streamLoaded = await loadStream(streams[currentStreamIndex]);
+        if (streamLoaded) break;
+      }
+    }
+    
+    // If all streams fail
+    if (!streamLoaded) {
+      showError("All streams failed. Trying alternative method...");
+      // Try without loading indicator and wait longer
+      setTimeout(async () => {
+        try {
+          await video.play();
+          if (!plyrInstance) {
+            initPlyr(video, null);
+          }
+        } catch (err) {
+          showError("Stream temporarily unavailable. Please try again later.");
+        }
+      }, 2000);
     }
     
     return;
@@ -807,12 +914,15 @@ async function startHLSEngine() {
   });
 
   try {
+    showLoading(true);
     await player.load(CONFIG.streamUrl);
     video.playbackRate = 1.0;
     await video.play().catch(() => {});
+    showLoading(false);
     initPlyr(video, player);
   } catch (err) {
     console.error("Stream initialization error:", err);
+    showLoading(false);
     showError("Stream loading failed. Please try again.");
   }
 
