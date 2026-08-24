@@ -7,6 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>TG:-@STREAMXCRICK</title>
   <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%236366f1'/></svg>">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
@@ -552,7 +554,7 @@
       <div class="meta-card">
         <div class="channel-info-wrapper">
           <div class="channel-header-row">
-            <h2 id="channelNameDisplay">SONY LIV</h2>
+            <h2 id="channelNameDisplay">SONY MAX</h2>
             <div class="mini-live-tag">
               <div class="live-dot"></div>
               <span>Live Stream</span>
@@ -601,17 +603,10 @@
 
 const CONFIG = {
   telegramLink: "https://t.me/+AreyM6apVFAzZDk9",
-  channelName: "SONY LIV",
+  channelName: "SONY MAX",
   languageName: "HINDI",
-  // Primary streams
-  streamUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/Ten_3_MOB/WDVLive/index.mpd",
-  hlsUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/Ten_3_MOB/WDVLive/index.m3u8",
-  // Fallback streams (alternative Sony channels)
-  fallbackStreams: [
-    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.m3u8",
-    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyTen1_MOB/WDVLive/index.m3u8",
-    "https://jiotvmblive.cdn.jio.com/bpk-tv/SonySix_MOB/WDVLive/index.m3u8"
-  ],
+  streamUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.mpd",
+  hlsUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.m3u8",
   cookieUrl: "https://allrounder2-0.pages.dev/api/Sony-3.json",
   keyId: "68318f7c97c55ba6ab8d0398a88fed3e",
   key: "d312fb3325b4eb9462b4a0d2b6794adf"
@@ -744,10 +739,12 @@ async function fetchDynamicCookie() {
       currentCookieHeader = data.cookie.trim();
       const match = currentCookieHeader.match(/__hdnea__=([^&]*)/);
       currentTokenValue = match ? match[0] : currentCookieHeader;
+      console.log("Cookie fetched successfully");
       return true;
     }
   } catch (err) {
     console.warn("Failed to fetch dynamic cookie/token:", err.message);
+    // Continue without cookie - some streams might work without it
   }
   return false;
 }
@@ -758,31 +755,11 @@ async function startHLSEngine() {
   
   // Use native HLS for iOS Safari, Shaka for others
   if (isIOS) {
-    // iOS native HLS approach with fallback
-    let currentStreamIndex = 0;
-    const streams = [CONFIG.hlsUrl, ...CONFIG.fallbackStreams];
-    
-    const loadStream = async (streamUrl) => {
-      console.log("Attempting to load stream:", streamUrl);
-      showLoading(true);
-      video.src = streamUrl;
-      video.playsInline = true;
-      video.muted = true;
-      
-      try {
-        await video.play();
-        if (!plyrInstance) {
-          initPlyr(video, null);
-        }
-        showLoading(false);
-        console.log("Stream loaded successfully:", streamUrl);
-        return true;
-      } catch (err) {
-        console.error("Failed to load stream:", streamUrl, err);
-        showLoading(false);
-        return false;
-      }
-    };
+    // iOS native HLS approach
+    showLoading(true);
+    video.src = CONFIG.hlsUrl;
+    video.playsInline = true;
+    video.muted = true;
     
     // Unmute on interaction
     const enableAudio = () => {
@@ -794,18 +771,11 @@ async function startHLSEngine() {
     document.addEventListener("click", enableAudio);
     document.addEventListener("touchstart", enableAudio);
     
-    // Error handling for iOS with fallback
+    // Error handling for iOS
     video.addEventListener('error', (error) => {
       console.error('iOS video error:', error);
       showLoading(false);
-      // Try next fallback stream
-      if (currentStreamIndex < streams.length - 1) {
-        currentStreamIndex++;
-        console.log("Trying next fallback stream:", streams[currentStreamIndex]);
-        loadStream(streams[currentStreamIndex]);
-      } else {
-        showError("Video playback error. Please refresh the page.");
-      }
+      showError("Video playback error. Stream may be unavailable.");
     });
     
     // Network change handling for iOS
@@ -821,33 +791,15 @@ async function startHLSEngine() {
       showError("Network connection lost. Please check your internet.");
     });
     
-    // Try primary stream first
-    let streamLoaded = await loadStream(streams[currentStreamIndex]);
-    
-    // If primary fails, try fallback streams
-    if (!streamLoaded && CONFIG.fallbackStreams.length > 0) {
-      for (let i = 0; i < CONFIG.fallbackStreams.length; i++) {
-        currentStreamIndex = i + 1;
-        console.log("Trying fallback stream:", streams[currentStreamIndex]);
-        streamLoaded = await loadStream(streams[currentStreamIndex]);
-        if (streamLoaded) break;
-      }
-    }
-    
-    // If all streams fail
-    if (!streamLoaded) {
-      showError("All streams failed. Trying alternative method...");
-      // Try without loading indicator and wait longer
-      setTimeout(async () => {
-        try {
-          await video.play();
-          if (!plyrInstance) {
-            initPlyr(video, null);
-          }
-        } catch (err) {
-          showError("Stream temporarily unavailable. Please try again later.");
-        }
-      }, 2000);
+    try {
+      await video.play();
+      initPlyr(video, null);
+      showLoading(false);
+      console.log("iOS stream loaded successfully");
+    } catch (err) {
+      console.error("iOS HLS error:", err);
+      showLoading(false);
+      showError("Stream loading failed. Please try again.");
     }
     
     return;
@@ -857,7 +809,8 @@ async function startHLSEngine() {
   shaka.polyfill.installAll();
   if (!shaka.Player.isBrowserSupported()) return;
 
-  const player = new shaka.Player(video);
+  const player = new shaka.Player();
+  await player.attach(video);
   
   player.configure({
     drm: { 
@@ -867,41 +820,27 @@ async function startHLSEngine() {
     },
     manifest: { 
       defaultPresentationDelay: 5,
-      dash: { ignoreMinBufferTime: true },
-      retryParameters: {
-        timeout: 8000,
-        maxAttempts: 3
-      }
+      dash: { ignoreMinBufferTime: true }
     },
     streaming: {
-      lowLatencyMode: true,
       bufferingGoal: 15,
       rebufferingGoal: 2,
-      bufferBehind: 15,
-      stallEnabled: true,
-      jumpLargeGaps: true,
-      retryParameters: {
-        timeout: 10000,
-        maxAttempts: 5,
-        baseDelay: 300,
-        backoffFactor: 1.2
-      }
+      bufferBehind: 15
     },
     abr: {
       enabled: true,
-      defaultBandwidthEstimate: 1000000,
-      switchInterval: 8
+      defaultBandwidthEstimate: 1000000
     }
   });
 
   await fetchDynamicCookie();
   setInterval(fetchDynamicCookie, 5 * 60 * 1000);
 
-  player.getNetworkingEngine().registerRequestFilter((type, request) => {
-    request.headers["Referer"] = "https://www.jiotv.com/";
-    request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-
-    if (currentCookieHeader) {
+  // Only add request filter if we have a cookie
+  if (currentCookieHeader) {
+    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+      request.headers["Referer"] = "https://www.jiotv.com/";
+      request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
       request.headers["Cookie"] = currentCookieHeader;
 
       if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
@@ -910,8 +849,8 @@ async function startHLSEngine() {
         const sep = request.uris[0].includes("?") ? "&" : "?";
         request.uris[0] += sep + currentTokenValue;
       }
-    }
-  });
+    });
+  }
 
   try {
     showLoading(true);
@@ -920,6 +859,7 @@ async function startHLSEngine() {
     await video.play().catch(() => {});
     showLoading(false);
     initPlyr(video, player);
+    console.log("Shaka player stream loaded successfully");
   } catch (err) {
     console.error("Stream initialization error:", err);
     showLoading(false);
@@ -1048,5 +988,5 @@ function initEvents() {
 document.addEventListener("DOMContentLoaded", initEvents);
 </script>
 
-<!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3d63cef372804c02af557b5b376fd257"}'></script><!-- Cloudflare Pages Analytics --></body>
+</body>
 </html>
