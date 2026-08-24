@@ -1,992 +1,116 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TG:-@STREAMXCRICK</title>
-  <meta name="referrer" content="no-referrer">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%236366f1'/></svg>">
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+  <meta name="referrer" content="no-referrer"/>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.js" crossorigin="anonymous"></script>
-
+  <title>Player Frame</title>
   <style>
-    :root {
-      --bg-main: #0a0a0a; 
-      --panel-bg: rgba(18, 18, 28, 0.85);
-      --panel-border: rgba(255, 255, 255, 0.1);
-      --premium-accent: #6366f1; 
-      --premium-accent-hover: #4f46e5;
-      --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --live-green: #10B981;
-      --panel-blur: blur(20px);
-      --plyr-color-main: #6366f1; 
-    }
-
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     body {
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-      color: var(--text-primary);
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
-    .app-wrapper {
-      width: 100%;
-      max-width: 480px; 
-      padding: 14px; 
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      position: relative;
-    }
-
-    @media (min-width: 992px) {
-      .app-wrapper {
-        max-width: 1200px;
-        padding: 24px;
-      }
-      .main-grid {
-        display: grid;
-        grid-template-columns: 1.6fr 1fr; 
-        gap: 20px;
-      }
-    }
-
-    .main-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-
-    header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: var(--panel-bg);
-      backdrop-filter: var(--panel-blur);
-      -webkit-backdrop-filter: var(--panel-blur);
-      border: 1px solid var(--panel-border);
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .brand-zone {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-logo-dot {
-      height: 8px; width: 8px;
-      background: var(--premium-accent);
-      border-radius: 50%;
-      box-shadow: 0 0 10px var(--premium-accent);
-    }
-
-    .brand-zone h1 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .header-join-btn {
-      background: var(--premium-accent);
-      color: #fff;
-      text-decoration: none;
-      padding: 8px 24px; 
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
-      transition: background 0.3s ease;
-    }
-    
-    .header-join-btn:hover {
-      background: var(--premium-accent-hover);
-    }
-
-    .presentation-space {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-
-    .video-viewport {
-      width: 100%;
-      aspect-ratio: 16/9; 
-      background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
-      border-radius: 16px;
+      background-color: #000;
       overflow: hidden;
-      border: 1px solid var(--panel-border);
-      position: relative;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
 
-    video {
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    .iframe-container {
+      position: relative;
       width: 100%;
       height: 100%;
-      object-fit: contain;
       background: #000;
-    }
-
-    .watermark-overlay {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: rgba(99, 102, 241, 0.7);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-      text-decoration: none;
-      z-index: 99;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .error-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(99, 102, 241, 0.9);
-      color: white;
-      padding: 16px 24px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      text-align: center;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
-      border: 1px solid rgba(99, 102, 241, 0.5);
-    }
-
-    .loading-indicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      z-index: 50;
-    }
-
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(99, 102, 241, 0.3);
-      border-top-color: #6366f1;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    .loading-indicator p {
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .meta-card {
-      background: var(--panel-bg);
-      backdrop-filter: var(--panel-blur);
-      -webkit-backdrop-filter: var(--panel-blur);
-      border: 1px solid var(--panel-border);
-      border-radius: 16px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .channel-info-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .channel-header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .meta-card h2 {
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-      color: #ffffff;
-      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .mini-live-tag {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--live-green);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
-    }
-
-    .live-dot {
-      width: 5px; height: 5px;
-      background: var(--live-green);
-      border-radius: 50%;
-      animation: blink 1.5s infinite;
-    }
-
-    .channel-subtitle {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .lang-highlight {
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    .control-space {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-
-    .premium-widget {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, var(--panel-bg) 100%);
-      backdrop-filter: var(--panel-blur);
-      -webkit-backdrop-filter: var(--panel-blur);
-      border: 1px solid var(--panel-border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
-    }
-
-    .premium-widget h3 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .premium-widget p {
-      color: var(--text-secondary);
-      font-size: 0.88rem;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .btn-action-primary {
-      background: var(--premium-accent);
-      color: #fff;
-      text-align: center;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.92rem;
-      text-decoration: none;
-      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      z-index: 1;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
       border: none;
-      width: 100%;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-    
-    .btn-action-primary:hover {
-      background: var(--premium-accent-hover);
-      transform: translateY(-2px);
-    }
-    
-    .btn-action-primary:active {
-      transform: translateY(0);
-    }
-
-    .utility-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .btn-utility {
-      background: var(--panel-bg);
-      backdrop-filter: var(--panel-blur);
-      -webkit-backdrop-filter: var(--panel-blur);
-      border: 1px solid var(--panel-border);
-      color: var(--text-primary);
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-utility:hover {
-      background: rgba(99, 102, 241, 0.1);
-      border-color: var(--premium-accent);
-      transform: translateY(-2px);
-    }
-    
-    .btn-utility:active {
-      transform: translateY(0);
-    }
-
-    .popup-overlay {
-      position: fixed; inset: 0; 
-      background: rgba(0, 0, 0, 0.85);
-      display: none; align-items: center; justify-content: center;
-      z-index: 99999; padding: 20px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-    .popup-overlay.visible { display: flex; }
-
-    .popup-card {
-      background: linear-gradient(145deg, rgba(26, 26, 46, 0.95) 0%, rgba(13, 17, 28, 0.98) 100%);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 20px; padding: 32px 24px; text-align: center;
-      width: 100%; max-width: 340px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.1);
-      animation: popupSlideUp 0.4s ease-out;
-    }
-
-    @keyframes popupSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .popup-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 28px;
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
-    }
-
-    .popup-title { 
-      font-size: 1.8rem; 
-      font-weight: 800; 
-      margin-bottom: 12px; 
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .popup-p { 
-      color: var(--text-secondary); 
-      margin-bottom: 24px; 
-      font-size: 0.9rem; 
-      line-height: 1.6;
-      max-width: 280px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .btn-popup-primary {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      color: #fff;
-      text-align: center;
-      padding: 16px 24px; 
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 1rem;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: none;
-      width: 100%;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-    }
-    
-    .btn-popup-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
-    }
-    
-    .btn-popup-primary:active {
-      transform: translateY(0);
-    }
-
-    .already-joined-btn {
-      background: transparent; 
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.5); 
-      padding: 10px 20px; 
-      border-radius: 12px;
-      font-size: 0.85rem; 
-      font-weight: 600; 
-      margin-top: 16px; 
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .already-joined-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.7);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .plyr--video {
-      border-radius: 16px !important;
-      height: 100% !important;
-      width: 100% !important;
-    }
-
-    footer { text-align: center; margin-top: auto; padding: 32px 0 16px; font-size: 0.82rem; }
-    .foot-brand { 
-      font-weight: 800; 
-      font-size: 0.88rem; 
-      color: var(--text-primary);
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
 <body>
-
-<div class="app-wrapper">
-  <header>
-    <div class="brand-zone">
-      <div class="brand-logo-dot"></div>
-      <h1>STREAMXCRICK</h1>
-    </div>
-    <a href="https://t.me/+AreyM6apVFAzZDk9" target="_blank" class="header-join-btn">Join</a>
-  </header>
-
-  <div class="main-grid">
-
-    <div class="presentation-space">
-      <div class="video-viewport" id="playerContainer">
-        <a href="https://t.me/+AreyM6apVFAzZDk9" target="_blank" class="watermark-overlay">@STREAMXCRICK</a>
-        <video id="player" playsinline crossorigin></video>
-        <div id="errorMessage" class="error-message" style="display: none;"></div>
-        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-          <div class="loading-spinner"></div>
-          <p>Loading stream...</p>
-        </div>
-      </div>
-
-      <div class="meta-card">
-        <div class="channel-info-wrapper">
-          <div class="channel-header-row">
-            <h2 id="channelNameDisplay">SONY MAX</h2>
-            <div class="mini-live-tag">
-              <div class="live-dot"></div>
-              <span>Live Stream</span>
-            </div>
-          </div>
-          <span class="channel-subtitle">Language : <span class="lang-highlight" id="langName">HINDI</span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="control-space">
-      <div class="premium-widget">
-        <h3>Join the Community Hub</h3>
-        <p>Live cricket match clips 🎥, backup streaming feeds ⚡ and ongoing sport broadcasts 🏆.</p>
-        <a href="https://t.me/+AreyM6apVFAzZDk9" class="btn-action-primary" target="_blank">Open Telegram Channel</a>
-      </div>
-
-      <div class="utility-grid">
-        <button class="btn-utility" id="btnShare">Share 📤</button>
-        <button class="btn-utility" id="btnCopy">Copy Link 🔗</button>
-      </div>
-    </div>
-
+  <div class="iframe-container">
+    <iframe 
+      id="streamFrame"
+      src="" 
+      allow="autoplay; fullscreen; picture-in-picture; accelerometer; gyroscope; clipboard-write; encrypted-media"
+      allowfullscreen
+      webkitallowfullscreen
+      mozallowfullscreen
+      frameborder="0"
+      scrolling="no"
+      referrerpolicy="no-referrer"
+      webkit-playsinline
+      playsinline
+    ></iframe>
   </div>
 
-  <footer>
-    <p style="color: var(--text-secondary);">Made With ❤️ Made For You 🫶</p>
-    <p class="foot-brand">TG:-@STREAMXCRICKET</p>
-  </footer>
-</div>
-
-<div id="tgPopup" class="popup-overlay">
-  <div class="popup-card">
-    <div class="popup-icon">🎬</div>
-    <div class="popup-title">Welcome</div>
-    <p class="popup-p">Join our Telegram for live cricket clips, exclusive highlights & updates 🎥🔥🚀</p>
-    <button class="btn-popup-primary" id="tgJoinBtn">Join Community</button>
-    <button class="already-joined-btn" id="tgCloseBtn">Already Joined</button>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
-
-<script>
-"use strict";
-
-const CONFIG = {
-  telegramLink: "https://t.me/+AreyM6apVFAzZDk9",
-  channelName: "SONY MAX",
-  languageName: "HINDI",
-  streamUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.mpd",
-  hlsUrl: "https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX_MOB/WDVLive/index.m3u8",
-  cookieUrl: "https://allrounder2-0.pages.dev/api/Sony-3.json",
-  keyId: "68318f7c97c55ba6ab8d0398a88fed3e",
-  key: "d312fb3325b4eb9462b4a0d2b6794adf"
-};
-
-let plyrInstance = null;
-let currentCookieHeader = "";
-let currentTokenValue = "";
-
-function showError(message) {
-  const errorEl = document.getElementById("errorMessage");
-  const loadingEl = document.getElementById("loadingIndicator");
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.style.display = "block";
-    if (loadingEl) loadingEl.style.display = "none";
-    
-    // Auto-hide after 8 seconds
-    setTimeout(() => {
-      errorEl.style.display = "none";
-    }, 8000);
-  }
-}
-
-function showLoading(show = true) {
-  const loadingEl = document.getElementById("loadingIndicator");
-  const errorEl = document.getElementById("errorMessage");
-  if (loadingEl) {
-    loadingEl.style.display = show ? "flex" : "none";
-  }
-  if (errorEl && show) {
-    errorEl.style.display = "none";
-  }
-}
-
-function updateUI() {
-  const nameEl = document.getElementById("channelNameDisplay");
-  const langEl = document.getElementById("langName");
-  if (nameEl && CONFIG.channelName) nameEl.textContent = CONFIG.channelName;
-  if (langEl && CONFIG.languageName) langEl.textContent = CONFIG.languageName;
-}
-
-function initPlyr(videoEl, shakaPlayerInstance) {
-  if (plyrInstance) return;
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-  // For iOS native HLS, we use simpler Plyr config
-  if (isIOS) {
-    plyrInstance = new Plyr(videoEl, {
-      autoplay: false,
-      controls: [
-        'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'
-      ]
-    });
-    
-    videoEl.playbackRate = 1.0;
-    return;
-  }
-
-  // For Shaka Player (non-iOS)
-  const getQualityOptions = () => {
-    if (!shakaPlayerInstance) return [1080, 720, 480, 360];
-    const tracks = shakaPlayerInstance.getVariantTracks();
-    const heights = [...new Set(tracks.filter(t => t.type === 'video' && t.height).map(t => t.height))];
-    return heights.length ? heights.sort((a, b) => b - a) : [1080, 720, 480, 360];
-  };
-
-  plyrInstance = new Plyr(videoEl, {
-    autoplay: true,
-    controls: [
-      'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'
-    ],
-    settings: ['quality'],
-    quality: {
-      default: 720,
-      options: getQualityOptions(),
-      forced: true,
-      onChange: (newQuality) => {
-        if (!shakaPlayerInstance) return;
-        if (newQuality === 0) {
-          shakaPlayerInstance.configure({ abr: { enabled: true } });
-        } else {
-          shakaPlayerInstance.configure({ abr: { enabled: false } });
-          const tracks = shakaPlayerInstance.getVariantTracks();
-          const targetTrack = tracks.find(t => t.type === 'video' && t.height === newQuality);
-          if (targetTrack) {
-            shakaPlayerInstance.selectVariantTrack(targetTrack, true);
-          }
-        }
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // STREAM URL - YAHAN APNA URL DALEIN
+      const STREAM_URL = "https://demo-6yx.pages.dev/playernew?id=hindi";
+      
+      const iframe = document.getElementById('streamFrame');
+      
+      // Set iframe src
+      iframe.src = STREAM_URL;
+      
+      // iOS-specific fixes
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        // Force reload for iOS
+        setTimeout(() => {
+          iframe.src = iframe.src;
+        }, 100);
+        
+        // iOS 15+ fix for fullscreen
+        iframe.addEventListener('webkitbeginfullscreen', () => {
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+        });
+        
+        iframe.addEventListener('webkitendfullscreen', () => {
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+        });
       }
-    }
-  });
-
-  videoEl.playbackRate = 1.0;
-  videoEl.addEventListener('ratechange', () => {
-    if (videoEl.playbackRate !== 1.0 && !videoEl.paused) {
-      videoEl.playbackRate = 1.0;
-    }
-  });
-
-  shakaPlayerInstance.addEventListener('trackschanged', () => {
-    const updatedHeights = getQualityOptions();
-    if (updatedHeights.length && plyrInstance) {
-      plyrInstance.quality.options = updatedHeights;
-    }
-  });
-
-  setInterval(() => {
-    if (videoEl.paused && videoEl.readyState > 2) {
-      videoEl.play().catch(() => {});
-    }
-  }, 3000);
-
-  const triggerAudio = () => {
-    videoEl.muted = false;
-    videoEl.volume = 1;
-    document.removeEventListener("click", triggerAudio);
-    document.removeEventListener("touchstart", triggerAudio);
-  };
-  document.addEventListener("click", triggerAudio);
-  document.addEventListener("touchstart", triggerAudio);
-}
-
-async function fetchDynamicCookie() {
-  try {
-    const response = await fetch(CONFIG.cookieUrl, { cache: 'no-store' });
-    const data = await response.json();
-    if (data && data.cookie) {
-      currentCookieHeader = data.cookie.trim();
-      const match = currentCookieHeader.match(/__hdnea__=([^&]*)/);
-      currentTokenValue = match ? match[0] : currentCookieHeader;
-      console.log("Cookie fetched successfully");
-      return true;
-    }
-  } catch (err) {
-    console.warn("Failed to fetch dynamic cookie/token:", err.message);
-    // Continue without cookie - some streams might work without it
-  }
-  return false;
-}
-
-async function startHLSEngine() {
-  const video = document.getElementById("player");
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  
-  // Use native HLS for iOS Safari, Shaka for others
-  if (isIOS) {
-    // iOS native HLS approach
-    showLoading(true);
-    video.src = CONFIG.hlsUrl;
-    video.playsInline = true;
-    video.muted = true;
-    
-    // Unmute on interaction
-    const enableAudio = () => {
-      video.muted = false;
-      video.volume = 1;
-      document.removeEventListener("click", enableAudio);
-      document.removeEventListener("touchstart", enableAudio);
-    };
-    document.addEventListener("click", enableAudio);
-    document.addEventListener("touchstart", enableAudio);
-    
-    // Error handling for iOS
-    video.addEventListener('error', (error) => {
-      console.error('iOS video error:', error);
-      showLoading(false);
-      showError("Video playback error. Stream may be unavailable.");
-    });
-    
-    // Network change handling for iOS
-    window.addEventListener('online', () => {
-      console.log('Network connection restored');
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-    });
-
-    window.addEventListener('offline', () => {
-      console.log('Network connection lost');
-      showError("Network connection lost. Please check your internet.");
-    });
-    
-    try {
-      await video.play();
-      initPlyr(video, null);
-      showLoading(false);
-      console.log("iOS stream loaded successfully");
-    } catch (err) {
-      console.error("iOS HLS error:", err);
-      showLoading(false);
-      showError("Stream loading failed. Please try again.");
-    }
-    
-    return;
-  }
-  
-  // Shaka Player for non-iOS
-  shaka.polyfill.installAll();
-  if (!shaka.Player.isBrowserSupported()) return;
-
-  const player = new shaka.Player();
-  await player.attach(video);
-  
-  player.configure({
-    drm: { 
-      clearKeys: { 
-        [CONFIG.keyId]: CONFIG.key 
-      } 
-    },
-    manifest: { 
-      defaultPresentationDelay: 5,
-      dash: { ignoreMinBufferTime: true }
-    },
-    streaming: {
-      bufferingGoal: 15,
-      rebufferingGoal: 2,
-      bufferBehind: 15
-    },
-    abr: {
-      enabled: true,
-      defaultBandwidthEstimate: 1000000
-    }
-  });
-
-  await fetchDynamicCookie();
-  setInterval(fetchDynamicCookie, 5 * 60 * 1000);
-
-  // Only add request filter if we have a cookie
-  if (currentCookieHeader) {
-    player.getNetworkingEngine().registerRequestFilter((type, request) => {
-      request.headers["Referer"] = "https://www.jiotv.com/";
-      request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-      request.headers["Cookie"] = currentCookieHeader;
-
-      if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-           type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-          request.uris[0] && !request.uris[0].includes("__hdnea=")) {
-        const sep = request.uris[0].includes("?") ? "&" : "?";
-        request.uris[0] += sep + currentTokenValue;
-      }
-    });
-  }
-
-  try {
-    showLoading(true);
-    await player.load(CONFIG.streamUrl);
-    video.playbackRate = 1.0;
-    await video.play().catch(() => {});
-    showLoading(false);
-    initPlyr(video, player);
-    console.log("Shaka player stream loaded successfully");
-  } catch (err) {
-    console.error("Stream initialization error:", err);
-    showLoading(false);
-    showError("Stream loading failed. Please try again.");
-  }
-
-  // Error event listeners
-  player.addEventListener('error', (error) => {
-    console.error('Player error:', error);
-    showError("Playback error occurred. Stream may be unavailable.");
-  });
-
-  video.addEventListener('error', (error) => {
-    console.error('Video element error:', error);
-    showError("Video playback error. Please refresh the page.");
-  });
-
-  // Handle network changes
-  window.addEventListener('online', () => {
-    console.log('Network connection restored');
-    if (video.paused) {
-      video.play().catch(() => {});
-    }
-  });
-
-  window.addEventListener('offline', () => {
-    console.log('Network connection lost');
-    showError("Network connection lost. Please check your internet.");
-  });
-
-  await fetchDynamicCookie();
-  setInterval(fetchDynamicCookie, 5 * 60 * 1000);
-
-  player.getNetworkingEngine().registerRequestFilter((type, request) => {
-    request.headers["Referer"] = "https://www.jiotv.com/";
-    request.headers["User-Agent"] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-
-    if (currentCookieHeader) {
-      request.headers["Cookie"] = currentCookieHeader;
-
-      if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-           type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-          request.uris[0] && !request.uris[0].includes("__hdnea=")) {
-        const sep = request.uris[0].includes("?") ? "&" : "?";
-        request.uris[0] += sep + currentTokenValue;
-      }
-    }
-  });
-
-  try {
-    await player.load(CONFIG.streamUrl);
-    video.playbackRate = 1.0;
-    
-    // iOS-specific autoplay
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIOS) {
-      video.muted = true;
-      video.playsInline = true;
-      await video.play().catch(() => {
-        console.log("iOS autoplay muted failed, waiting for interaction");
+      
+      // Handle orientation change
+      window.addEventListener('orientationchange', function() {
+        setTimeout(() => {
+          iframe.style.height = window.innerHeight + 'px';
+        }, 100);
       });
-    } else {
-      await video.play().catch(() => {});
-    }
-    
-    initPlyr(video, player);
-  } catch (err) {
-    console.error("Stream initialization error:", err);
-    // Show error message to user
-    showError("Stream loading failed. Please try again.");
-  }
-
-  // Error event listeners
-  player.addEventListener('error', (error) => {
-    console.error('Player error:', error);
-    showError("Playback error occurred. Stream may be unavailable.");
-  });
-
-  video.addEventListener('error', (error) => {
-    console.error('Video element error:', error);
-    showError("Video playback error. Please refresh the page.");
-  });
-
-  // Handle network changes for iOS
-  window.addEventListener('online', () => {
-    console.log('Network connection restored');
-    if (video.paused) {
-      video.play().catch(() => {});
-    }
-  });
-
-  window.addEventListener('offline', () => {
-    console.log('Network connection lost');
-    showError("Network connection lost. Please check your internet.");
-  });
-}
-
-function initEvents() {
-  updateUI();
-
-  const handler = () => { navigator.clipboard.writeText(window.location.href); };
-  document.getElementById("btnShare").addEventListener("click", handler);
-  document.getElementById("btnCopy").addEventListener("click", handler);
-
-  document.getElementById("tgJoinBtn").addEventListener("click", () => {
-    window.open(CONFIG.telegramLink, "_blank");
-    document.getElementById("tgPopup").classList.remove("visible");
-    sessionStorage.setItem("crate_auth_pass", "true");
-    startHLSEngine();
-  });
-
-  document.getElementById("tgCloseBtn").addEventListener("click", () => {
-    document.getElementById("tgPopup").classList.remove("visible");
-    sessionStorage.setItem("crate_auth_pass", "true");
-    startHLSEngine();
-  });
-
-  if (sessionStorage.getItem("crate_auth_pass") === "true") {
-    document.getElementById("tgPopup").classList.remove("visible");
-    startHLSEngine();
-  } else {
-    document.getElementById("tgPopup").classList.add("visible");
-  }
-}
-
-document.addEventListener("DOMContentLoaded", initEvents);
-</script>
-
+      
+      // Auto-resize on window resize
+      window.addEventListener('resize', function() {
+        iframe.style.height = window.innerHeight + 'px';
+      });
+    });
+  </script>
 </body>
 </html>
