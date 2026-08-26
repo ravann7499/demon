@@ -1,193 +1,83 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Fox Cricket</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-  <meta name="referrer" content="no-referrer"/>
-  
-  <!-- Plyr CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Please Join Telegram</title>
 
-  <!-- dash.js -->
-  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#111;
+}
 
-  <!-- Plyr JS -->
-  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+.popup{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.7);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
 
-  <style>
-    body {
-      background-color: #000;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    html, body {
-      height: 100%;
-      width: 100%;
-    }
-    .video-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
-    .plyr {
-      height: 100%;
-      width: 100%;
-    }
-  </style>
+.box{
+    width:320px;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.box h2{
+    margin-top:0;
+}
+
+button{
+    padding:12px 25px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+    margin:10px;
+}
+
+.join{
+    background:#0088cc;
+    color:white;
+}
+
+.cancel{
+    background:#ff3b30;
+    color:white;
+}
+</style>
 </head>
+
 <body>
-  <div class="video-container">
-    <video autoplay playsinline muted id="player" controls preload="metadata"></video>
-  </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const video = document.getElementById("player");
-      const params = new URLSearchParams(window.location.search);
-      const defaultSource = "https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/r6rpiytfdp/out/v1/a7eb6c5c6a42479c83e0cc569b54731c/cenc.mpd";
-      const source = params.get("mpd") || defaultSource;
-      const keyId = params.get("keyid") || params.get("keyId");
-      const key = params.get("key");
+<div class="popup">
+    <div class="box">
+        <h2>Join Our Telegram Channel</h2>
+        <p>Latest Updates & Live Links</p>
 
-      const defaultOptions = {
-        autoplay: true,
-        controls: [
-          'play', 'rewind', 'fast-forward', 'progress', 'current-time',
-          'mute', 'volume', 'settings', 'fullscreen'
-        ],
-        settings: ['quality']
-      };
+        <button class="join" onclick="joinTelegram()">Join</button>
+        <button class="cancel" onclick="skip()">Cancel</button>
+    </div>
+</div>
 
-      let player;
+<script>
+function joinTelegram(){
+    window.location.href="YOUR_TELEGRAM_LINK";
+}
 
-      function setupPlayer(dashPlayer, qualities = []) {
-        player = new Plyr(video, {
-          ...defaultOptions,
-          quality: qualities.length ? {
-            default: qualities[0],
-            options: qualities,
-            forced: true,
-            onChange: q => {
-              const qualities = dashPlayer.getBitrateInfoListFor('video');
-              const qualityIndex = qualities.findIndex(item => item.height === q);
-              if (qualityIndex >= 0) dashPlayer.setQualityFor('video', qualityIndex);
-            }
-          } : {}
-        });
+function skip(){
+    window.location.href="https://dai.google.com/ssai/event/t2rqeJPuSQuYLwlNYZPhpw/master.m3u8";
+}
+</script>
 
-        // 🔁 AUTO RESUME
-        setInterval(() => {
-          if (video.paused && video.readyState > 2) {
-            video.play().catch(()=>{});
-          }
-        }, 3000);
-
-        // 🔊 AUTO UNMUTE (on first interaction)
-        const unmute = () => {
-          video.muted = false;
-          video.volume = 1;
-          document.removeEventListener("click", unmute);
-          document.removeEventListener("touchstart", unmute);
-        };
-
-        document.addEventListener("click", unmute);
-        document.addEventListener("touchstart", unmute);
-      }
-
-      if (window.dashjs) {
-        const dashPlayer = dashjs.MediaPlayer().create();
-        let retryCount = 0;
-        let retryTimer;
-
-        dashPlayer.updateSettings({
-          streaming: {
-            retryAttempts: {
-              MPD: 3,
-              XHR: 3,
-              MediaSegment: 3
-            },
-            retryIntervals: {
-              MPD: 1000,
-              XHR: 1000,
-              MediaSegment: 1000
-            }
-          }
-        });
-
-        if (keyId && key) {
-          dashPlayer.setProtectionData({
-            "org.w3.clearkey": {
-              clearkeys: {
-                "6f56f327399f2a6f58a875c57fee77f6":"a8ba4ecc2bf32075e4d5509b8abc6c12"
-              }
-            }
-          });
-        }
-
-        dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
-          retryCount = 0;
-          const availableQualities = dashPlayer
-            .getBitrateInfoListFor('video')
-            .map(item => item.height)
-            .filter(Boolean)
-            .sort((a, b) => b - a);
-          video.play().catch(()=>{});
-          setupPlayer(dashPlayer, [...new Set(availableQualities)]);
-        });
-
-        dashPlayer.on(dashjs.MediaPlayer.events.ERROR, (event) => {
-          console.error("MPD playback error:", event);
-          if (retryCount >= 3) return;
-
-          retryCount += 1;
-          clearTimeout(retryTimer);
-          retryTimer = setTimeout(() => {
-            dashPlayer.attachSource(source);
-          }, retryCount * 2000);
-        });
-
-        dashPlayer.initialize(video, source, true);
-      } else if (false && window.Hls && Hls.isSupported()) {
-        const hls = new Hls({
-          autoStartLoad: true
-        });
-
-        hls.loadSource(source);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          const availableQualities = data.levels.map(l => l.height).sort((a,b) => b - a);
-          video.play().catch(()=>{});
-          setupPlayer(hls, availableQualities);
-        });
-
-        // 🔥 AUTO RECOVER ON ERROR
-        hls.on(Hls.Events.ERROR, function (_, data) {
-          if (data.fatal) {
-            hls.startLoad();
-          }
-        });
-
-      } else if (false && video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = source;
-        video.addEventListener("loadedmetadata", () => {
-          video.play().catch(()=>{});
-          setupPlayer(null);
-        });
-      }
-    });
-  </script>
 </body>
 </html>
