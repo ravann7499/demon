@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fox 501 · Plyr</title>
+    <!-- Plyr CSS (v3.7.8) -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        /* reset & fullscreen bedrock */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #0b0b0b;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        .player-wrapper {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        #foxPlayer {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            background: #000;
+        }
+        .plyr--video {
+            background: #000;
+        }
+        /* ===== PREMIUM RED PROGRESS BAR ===== */
+        .plyr__progress__buffer,
+        .plyr__progress__buffer::-webkit-progress-bar {
+            background: rgba(255, 255, 255, 0.15) !important;
+        }
+        .plyr__progress__played,
+        .plyr__progress__played::-webkit-progress-value {
+            background: #e50914 !important;
+            background-image: linear-gradient(135deg, #ff1a1a, #cc0000) !important;
+            box-shadow: 0 0 12px #e50914aa, 0 0 4px #ff4d4d80 !important;
+            transition: background 0.1s ease;
+        }
+        .plyr__progress__thumb {
+            background: #e50914 !important;
+            box-shadow: 0 0 16px #e50914, 0 0 6px #ff6666 !important;
+            border: 2px solid #fff !important;
+            transition: box-shadow 0.2s;
+        }
+        .plyr__progress__thumb:hover {
+            box-shadow: 0 0 24px #ff3333, 0 0 12px #ff9999 !important;
+        }
+        .plyr__volume input[type="range"]::-webkit-slider-runnable-track,
+        .plyr__volume input[type="range"]::-moz-range-track {
+            background: rgba(255,255,255,0.2) !important;
+        }
+        .plyr__volume input[type="range"]::-webkit-slider-thumb {
+            background: #e50914 !important;
+            box-shadow: 0 0 8px #e50914 !important;
+        }
+        .player-wrapper video {
+            object-fit: contain;
+            background: #000;
+        }
+        .plyr__control[aria-pressed="true"] {
+            background: #e50914 !important;
+        }
+        .plyr__control:hover {
+            background: #e50914 !important;
+        }
+        .plyr__progress input[type="range"]::-webkit-slider-runnable-track {
+            background: rgba(255,255,255,0.2) !important;
+        }
+        .plyr__progress input[type="range"]::-webkit-slider-thumb {
+            background: #e50914 !important;
+            box-shadow: 0 0 20px #e50914cc !important;
+        }
+        .plyr__progress input[type="range"]::-moz-range-thumb {
+            background: #e50914 !important;
+            border: 2px solid white !important;
+            box-shadow: 0 0 16px #e50914 !important;
+        }
+        .plyr__progress input[type="range"]::-moz-range-progress {
+            background: #e50914 !important;
+        }
+        .plyr__menu__container .plyr__control[role="menuitem"] .plyr__menu__value {
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-wrapper">
+        <video id="foxPlayer" playsinline crossorigin>
+            <source src="https://ingest4-9869.boxcast.com/satisfying-year/dhii6vrqpq5jdgsbz3cy/1080p-byteranges-ext.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9pbmdlc3Q0LTk4NjkuYm94Y2FzdC5jb20vc2F0aXNmeWluZy15ZWFyL2RoaWk2dnJxcHE1amRnc2J6M2N5LzEwODBwLWJ5dGVyYW5nZXMtZXh0Lm0zdTgiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODk0MTYwNTd9fX1dfQ&Signature=qXFLEwc8QLm6LZD6Ezj1yPuxKTRMX6CO0JHLSmB9N3XMon~FhV4gnEm2es741WirywgDzZ-W2OL6mdosWi1gkGEUDaN9DPmik6VrNGf31gcMirQPtq5fDOJ-~-Oq0PxEezc97NvdE4myKkULsb7Ic3OKZxLXUq1tpcp8CUMeANssqSyeYbAiVNKI8qtSGlFAd24Upj88w-wTnLy~~EaTCD7g2DCgKQjuUGVhkfBOeiThuRPWT1I0jL3qTTEdxNwkuPlLlKE34FrfV6-JAlcmyi6irz1~NogdLDu6IsVX1O8ypDdB3RWi7Y-~rTv89FgLoJl8eqFpN0DNifWsCQVkzw&Key-Pair-Id=APKAJ7GUCBQUK6NTWZCA" type="application/vnd.apple.mpegurl" />
+            <p>Your browser does not support HLS. Please use a modern browser.</p>
+        </video>
+    </div>
+    
+    <!-- Plyr JS + HLS -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js"></script>
+    
+    <script>
+        (function() {
+            const video = document.getElementById('foxPlayer');
+            const streamUrl = 'https://ingest4-9869.boxcast.com/satisfying-year/dhii6vrqpq5jdgsbz3cy/1080p-byteranges-ext.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9pbmdlc3Q0LTk4NjkuYm94Y2FzdC5jb20vc2F0aXNmeWluZy15ZWFyL2RoaWk2dnJxcHE1amRnc2J6M2N5LzEwODBwLWJ5dGVyYW5nZXMtZXh0Lm0zdTgiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODk0MTYwNTd9fX1dfQ&Signature=qXFLEwc8QLm6LZD6Ezj1yPuxKTRMX6CO0JHLSmB9N3XMon~FhV4gnEm2es741WirywgDzZ-W2OL6mdosWi1gkGEUDaN9DPmik6VrNGf31gcMirQPtq5fDOJ-~-Oq0PxEezc97NvdE4myKkULsb7Ic3OKZxLXUq1tpcp8CUMeANssqSyeYbAiVNKI8qtSGlFAd24Upj88w-wTnLy~~EaTCD7g2DCgKQjuUGVhkfBOeiThuRPWT1I0jL3qTTEdxNwkuPlLlKE34FrfV6-JAlcmyi6irz1~NogdLDu6IsVX1O8ypDdB3RWi7Y-~rTv89FgLoJl8eqFpN0DNifWsCQVkzw&Key-Pair-Id=APKAJ7GUCBQUK6NTWZCA';
+            
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                });
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.warn('Autoplay prevented:', e));
+                });
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.warn('Autoplay blocked:', e));
+                });
+            } else {
+                console.warn('HLS not supported');
+            }
+
+            const player = new Plyr(video, {
+                controls: [
+                    'play-large', 'play', 'progress', 'current-time', 
+                    'duration', 'mute', 'volume', 'settings', 'fullscreen'
+                ],
+                quality: {
+                    default: 0,
+                    options: [1080, 720, 540, 480, 360, 240],
+                    forced: false,
+                    onChange: (quality) => {}
+                },
+                i18n: {
+                    play: 'Play', pause: 'Pause', mute: 'Mute', unmute: 'Unmute',
+                    settings: 'Settings', enterFullscreen: 'Fullscreen',
+                    exitFullscreen: 'Exit fullscreen', speed: 'Speed',
+                    normal: 'Normal', quality: 'Quality', loop: 'Loop',
+                },
+                logo: false,
+                tooltips: false,
+                keyboard: true,
+                autoplay: true,
+                blankVideo: '',
+                hideControls: false,
+                resetOnEnd: false,
+                ratio: '16:9',
+                fullscreen: { enabled: true, fallback: true },
+                storage: { enabled: false },
+            });
+
+            const container = player.elements.container;
+            if (container) {
+                container.style.width = '100%';
+                container.style.height = '100%';
+            }
+
+            window.addEventListener('resize', function() {
+                if (player) {
+                    player.elements.container.style.width = '100%';
+                    player.elements.container.style.height = '100%';
+                }
+            });
+
+            window.player = player;
+
+            if (Hls.isSupported()) {
+                const hlsInstance = video.hlsInstance || hls;
+                window.hlsInstance = hlsInstance;
+                hlsInstance.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {});
+            }
+        })();
+    </script>
+</body>
+</html>
