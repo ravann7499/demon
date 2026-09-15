@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CricxCrate | Live Streaming</title>
+  <meta name="referrer" content="no-referrer">
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #000000; 
+      --panel-bg: rgba(13, 17, 28, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --premium-red: #FF0000; 
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --live-green: #10B981;
+      --panel-blur: blur(20px);
+      --plyr-color-main: #FF0000; 
+    }
+
+    * { 
+      margin: 0; padding: 0; box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .app-wrapper {
+      width: 100%; max-width: 480px; padding: 14px; 
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    @media (min-width: 992px) {
+      .app-wrapper { max-width: 1200px; padding: 24px; }
+      .main-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; }
+    }
+
+    .main-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+
+    header {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 18px; background: var(--panel-bg); backdrop-filter: var(--panel-blur);
+      border: 1px solid var(--panel-border); border-radius: 16px;
+    }
+
+    .brand-zone { display: flex; align-items: center; gap: 10px; }
+    .brand-logo-dot { height: 8px; width: 8px; background: var(--premium-red); border-radius: 50%; }
+    .brand-zone h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .header-join-btn { background: var(--premium-red); color: #fff; text-decoration: none; padding: 8px 24px; border-radius: 10px; font-size: 13px; font-weight: 700; }
+
+    .presentation-space { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+
+    .video-viewport {
+      width: 100%; aspect-ratio: 16/9; background: #000;
+      border-radius: 16px; overflow: hidden; border: 1px solid var(--panel-border); position: relative;
+    }
+
+    video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+    .watermark-overlay {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      color: #fff; text-decoration: none; z-index: 99; pointer-events: none;
+    }
+
+    .meta-card {
+      background: var(--panel-bg); backdrop-filter: var(--panel-blur);
+      border: 1px solid var(--panel-border); border-radius: 16px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .channel-info-wrapper { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .channel-header-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .meta-card h2 { font-size: 1.1rem; font-weight: 800; color: #ffffff; }
+
+    .mini-live-tag {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15);
+      padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; color: var(--live-green);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .live-dot { width: 5px; height: 5px; background: var(--live-green); border-radius: 50%; animation: blink 1.5s infinite; }
+    .channel-subtitle { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .lang-highlight { color: #ffffff; font-weight: 700; }
+
+    .control-space { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+    .premium-widget {
+      background: var(--panel-bg); backdrop-filter: var(--panel-blur);
+      border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px;
+    }
+    .premium-widget h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .premium-widget p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; margin-bottom: 20px; }
+    .btn-action-primary {
+      background: var(--premium-red); color: #fff; text-align: center; padding: 12px 20px;
+      border-radius: 12px; font-weight: 700; font-size: 0.92rem; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; width: 100%;
+    }
+    .utility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+    .btn-utility {
+      background: var(--panel-bg); backdrop-filter: var(--panel-blur); border: 1px solid var(--panel-border);
+      color: var(--text-primary); padding: 12px; border-radius: 12px; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    footer { text-align: center; margin-top: auto; padding: 32px 0 16px; font-size: 0.82rem; }
+    .foot-brand { font-weight: 800; font-size: 0.88rem; color: var(--text-primary); }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+  <header>
+    <div class="brand-zone">
+      <div class="brand-logo-dot"></div>
+      <h1>CricxCrate</h1>
+    </div>
+    <a href="https://t.me/+IuiGD8YsXwIxYjc9" target="_blank" class="header-join-btn">Join</a>
+  </header>
+
+  <div class="main-grid">
+    <div class="presentation-space">
+      <div class="video-viewport" id="playerContainer">
+        <div class="watermark-overlay">@CricxCrate</div>
+        <video id="player" controls playsinline crossorigin></video>
+      </div>
+
+      <div class="meta-card">
+        <div class="channel-info-wrapper">
+          <div class="channel-header-row">
+            <h2 id="channelNameDisplay">SONY LIV</h2>
+            <div class="mini-live-tag">
+              <div class="live-dot"></div>
+              <span>Live Stream</span>
+            </div>
+          </div>
+          <span class="channel-subtitle">Language : <span class="lang-highlight" id="langName">Hindi</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-space">
+      <div class="premium-widget">
+        <h3>Join the Community Hub</h3>
+        <p>Live cricket match clips 🎥, backup streaming feeds ⚡ and ongoing sport broadcasts 🏆.</p>
+        <a href="https://t.me/+IuiGD8YsXwIxYjc9" class="btn-action-primary" target="_blank">Open Telegram Channel</a>
+      </div>
+
+      <div class="utility-grid">
+        <button class="btn-utility" id="btnShare">Share 📤</button>
+        <button class="btn-utility" id="btnCopy">Copy Link 🔗</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p style="color: var(--text-secondary);">Made With ❤️ Made For You 🫶</p>
+    <p class="foot-brand">© CRICXCRATE</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+const CONFIG = {
+  telegramLink: "https://t.me/+IuiGD8YsXwIxYjc9",
+  channelName: "SONY LIV",
+  languageName: "Hindi",
+  streamUrl: "Https://play.boxcast.com/p/psnzgzfg4vgkvej2elbb/v/all-byteranges-ext.m3u8?Expires=1789591552&Signature=cuW1HK7EVNhLVHrgt0ExuR~EVs1PmVnCZnaPrXKN4rBPMqaIiMNpDGdM-fxzTTohO2uU-IUYzxRt5uumDWPhHiX~HrEOggXrvLP2RqToQ~9N4yYegn1uFG5L~P4OIw7G4RkvyYAaRjId~m-GAwerwxSEGpeJoN7OUQrTzeWyi-xsB9N~ljzEQT4GNm9hF~IIP-FpdOUmlb8lON~YCXmKjwsGuMIR2RI0o97XEbCBW3Emz2eNZubVx6axtJePHZVQvoGZefzHsJRLjcbdnS0X~ac6r4W~sbn4AGRPrjfowW7nPPKMtNLeOXwrrOQF8my5vNuXJHLLpaV02Ohyh8ZWAg__&Key-Pair-Id=APKAJ7GUCBQUK6NTWZCA"
+};
+
+let plyrInstance = null;
+let hlsInstance = null;
+
+function initPlayer(qualities = [720]) {
+  if (plyrInstance) return;
+  const video = document.getElementById("player");
+
+  plyrInstance = new Plyr(video, {
+    autoplay: true,
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+    settings: ['quality'],
+    quality: {
+      default: qualities[0] || 720,
+      options: qualities,
+      forced: true,
+      onChange: (newQuality) => {
+        if (window.hls && window.hls.levels) {
+          window.hls.levels.forEach((level, index) => {
+            if (level.height === newQuality) { window.hls.currentLevel = index; }
+          });
+        }
+      }
+    },
+    fullscreen: { enabled: true, fallback: true, iosNative: true }
+  });
+
+  video.play().catch(() => {});
+}
+
+function setupStream() {
+  const video = document.getElementById("player");
+
+  if (Hls.isSupported()) {
+    const hls = new Hls({
+      startLevel: -1,
+      capLevelToPlayerSize: true,
+      autoLevelCapping: -1,
+      xhrSetup: function (xhr, url) {
+        xhr.setRequestHeader('Referer', 'https://play.boxcast.com/');
+      }
+    });
+    
+    hls.loadSource(CONFIG.streamUrl);
+    hls.attachMedia(video);
+    window.hls = hls;
+    hlsInstance = hls;
+
+    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+      let availableQualities = [720];
+      if (data.levels && data.levels.length > 0) {
+        availableQualities = data.levels.map(l => l.height).sort((a, b) => b - a);
+      }
+      initPlayer(availableQualities);
+    });
+
+    setTimeout(() => { if (!plyrInstance) initPlayer([720]); }, 2000);
+
+    hls.on(Hls.Events.ERROR, function (event, data) {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad(); break;
+          case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError(); break;
+          default: hls.destroy(); break;
+        }
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = CONFIG.streamUrl;
+    video.addEventListener('loadedmetadata', () => initPlayer([720]));
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupStream();
+  document.getElementById("btnShare").addEventListener("click", () => navigator.clipboard.writeText(window.location.href));
+  document.getElementById("btnCopy").addEventListener("click", () => navigator.clipboard.writeText(window.location.href));
+});
+</script>
+
+</body>
+</html>
