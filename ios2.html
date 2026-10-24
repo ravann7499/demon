@@ -1,83 +1,478 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Please Join Telegram</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#111;
-}
+  <title>CricxCrate · Live Streams</title>
 
-.popup{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.7);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
 
-.box{
-    width:320px;
-    background:#fff;
-    padding:25px;
-    border-radius:10px;
-    text-align:center;
-}
+  <!-- HLS.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-.box h2{
-    margin-top:0;
-}
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
 
-button{
-    padding:12px 25px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:16px;
-    margin:10px;
-}
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;background:#1A1A1A;overflow:hidden;
+      font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
-.join{
-    background:#0088cc;
-    color:white;
-}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:#1A1A1A}
+    ::-webkit-scrollbar-thumb{background:#6A7357;border-radius:4px}
 
-.cancel{
-    background:#ff3b30;
-    color:white;
-}
-</style>
+    #tgBadge{
+      position:fixed;
+      top:max(12px,env(safe-area-inset-top));
+      left:max(12px,env(safe-area-inset-left));
+      z-index:10001;
+      display:inline-flex;align-items:center;gap:7px;
+      padding:7px 14px;
+      background:#0088CC;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      color:#FFFFFF;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:.3px;
+      text-decoration:none;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,0.8);
+      box-shadow:0 4px 12px rgba(0,0,0,0.65);
+      transition:transform .2s ease,box-shadow .2s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    #tgBadge:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,136,204,0.25)}
+    #tgBadge:active{transform:scale(.96)}
+    #tgBadge svg{width:15px;height:15px;flex-shrink:0;fill:#FFFFFF}
+    #tgBadge span{white-space:nowrap}
+
+    #overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(26, 26, 26, 0.75);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      z-index:10000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:16px;
+      transition:opacity 0.3s ease;
+    }
+    .spinner-ring {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(251, 242, 218, 0.15);
+      border-top: 3px solid #0088CC;
+      border-radius: 50%;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #overlay p{
+      color:#FBF2DA;
+      font-size:13px;
+      letter-spacing:.5px;
+      text-align:center;
+      padding:0 24px;
+      font-weight:500;
+    }
+
+    #channel-list{
+      position:fixed;
+      inset:0;
+      background:#1A1A1A;
+      z-index:9998;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      padding:max(60px,calc(env(safe-area-inset-top) + 48px)) 16px max(24px,env(safe-area-inset-bottom));
+    }
+
+    #channel-list .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding-bottom:12px;
+      border-bottom:1px solid #111827;
+      flex-shrink:0;
+    }
+    #channel-list .header h1{
+      color:#FBF2DA;
+      font-size:16px;
+      font-weight:700;
+      letter-spacing:.5px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    #channel-list .header h1 span.brand-accent {
+      color:#0088CC;
+    }
+    #channel-list .header .count{
+      color:#888888;
+      font-size:11px;
+      font-weight:500;
+    }
+
+    #grid-wrapper{
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding-top:14px;
+      margin:0 -4px;
+      padding-right:4px;
+    }
+    #grid-wrapper::-webkit-scrollbar{width:4px}
+    #grid-wrapper::-webkit-scrollbar-track{background:transparent}
+    #grid-wrapper::-webkit-scrollbar-thumb{background:#6A7357;border-radius:4px}
+
+    #ch-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:14px;
+    }
+
+    .ch-card{
+      background:#111827;
+      border:1px solid #555555;
+      border-radius:14px;
+      padding:16px 12px;
+      cursor:pointer;
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      gap:10px;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      -webkit-tap-highlight-color:transparent;
+      min-height:120px;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .ch-card:hover{
+      transform:translateY(-3px);
+      border-color:#0088CC;
+      box-shadow:0 8px 30px rgba(0,136,204,0.12);
+    }
+    .ch-card:active{transform:scale(.96)}
+
+    .ch-card .ch-name{color:#F3F4F6;font-size:12px;font-weight:600;line-height:1.3;letter-spacing:.2px}
+
+    .ch-card .ch-placeholder{
+      width:100%;
+      max-width:110px;
+      height:55px;
+      background:#000000;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#888888;
+      font-size:14px;
+      font-weight:700;
+      border:1px solid #555555;
+    }
+    .ch-card .ch-placeholder .initials{
+      color:#FBF2DA;
+    }
+
+    #player-container{
+      position:fixed;
+      inset:0;
+      background:#000000;
+      z-index:9997;
+      display:none;
+      align-items:center;
+      justify-content:center;
+    }
+    #player-container video{width:100%;height:100%;object-fit:contain;background:#000000}
+    .plyr{height:100%;width:100%;background:#000000}
+    .plyr__controls{background:linear-gradient(0deg,rgba(0,0,0,0.65),transparent)!important}
+    .plyr__control--overlaid{background:#0088CC!important}
+
+    #status{
+      position:fixed;
+      top:max(12px,env(safe-area-inset-top));
+      right:max(12px,env(safe-area-inset-right));
+      z-index:9999;
+      padding:5px 12px;
+      background:#111827;
+      border:1px solid rgba(255,255,255,0.8);
+      font-size:11px;
+      font-weight:500;
+      border-radius:20px;
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .3s;
+      color:#FBF2DA;
+      backdrop-filter:blur(4px);
+    }
+    #status.show{opacity:1}
+    #status.warn{color:#0088CC}
+    #status.err{color:#F3F4F6}
+  </style>
 </head>
-
 <body>
+<a id="tgBadge" href="https://t.me/cricxcrate" target="_blank" rel="noopener" title="@CricxCrate">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"></path>
+  </svg>
+  <span>CricxCrate</span>
+</a>
 
-<div class="popup">
-    <div class="box">
-        <h2>Join Our Telegram Channel</h2>
-        <p>Latest Updates & Live Links</p>
-
-        <button class="join" onclick="joinTelegram()">Join</button>
-        <button class="cancel" onclick="skip()">Cancel</button>
-    </div>
+<div id="overlay" style="display: flex;">
+  <div class="spinner-ring"></div>
+  <p id="loadMsg">Connecting stream…</p>
 </div>
 
+<div id="status" class="ok">● Live</div>
+
+<div id="channel-list">
+  <div class="header">
+    <h1>Cricx<span class="brand-accent">Crate</span></h1>
+    <span class="count">0 channels</span>
+  </div>
+  <div id="grid-wrapper">
+    <div id="ch-grid"></div>
+  </div>
+</div>
+
+<div id="player-container">
+  <video id="player" playsinline webkit-playsinline preload="metadata"></video>
+</div>
 <script>
-function joinTelegram(){
-    window.location.href="https://t.me/+-veA6xX6J6UxOGFl";
+(function(){
+"use strict";
+
+var JSON_URL = "https://aryanstreams.pages.dev/data/sony_m3u8.json";
+
+var $overlay = document.getElementById("overlay");
+var $loadMsg = document.getElementById("loadMsg");
+var $status = document.getElementById("status");
+var $list = document.getElementById("channel-list");
+var $grid = document.getElementById("ch-grid");
+var $gridWrapper = document.getElementById("grid-wrapper");
+var $playerContainer = document.getElementById("player-container");
+var $video = document.getElementById("player");
+var $tgBadge = document.getElementById("tgBadge");
+
+var _stTmr = null;
+var allChannels = [];
+var currentPlayer = null;
+var currentHls = null;
+var resumeTmr = null;
+
+function toast(msg,type,dur){
+  $status.textContent=msg;
+  $status.className="show "+(type||"ok");
+  if(_stTmr) clearTimeout(_stTmr);
+  if(dur!==0){
+    _stTmr=setTimeout(function(){
+      $status.className=$status.className.replace("show","").trim();
+      _stTmr=null;
+    },dur||4000);
+  }
 }
 
-function skip(){
-    window.location.href="https://otte.live.fly.ww.aiv-cdn.net/fra-nitro/live/clients/dash/enc/mmvlg151u6/out/v1/ab9d1f193c094ee8a9305f983a716f35/cenc.mpd?|drmScheme=clearkey&drmLicense=18e6af4a0daf2a1fdfbdc5b541520c88:ca0b64b84edb4f20eb1e135ff03db4f7";
+function setMsg(m) { $loadMsg && ($loadMsg.textContent = m); }
+function showOverlay(m) { if(m) setMsg(m); $overlay.style.display = "flex"; }
+function hideOverlay() { $overlay.style.display = "none"; }
+function getChId() { return new URLSearchParams(location.search).get("id") || ""; }
+
+async function loadData(){
+  var r = await fetch(JSON_URL, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  var json = await r.json();
+  
+  var rawChannels = json.channels || [];
+  var channels = rawChannels.map(function(item){
+    return {
+      id: item.id,
+      name: item.name,
+      stream_url: item.proxied_url || item.raw_url
+    };
+  }).filter(function(c){ return c.stream_url && c.stream_url.length > 0; });
+
+  if(!channels.length) throw new Error("No channels found in JSON");
+  return { channels: channels };
 }
+
+function renderChannels(channels){
+  var countEl = document.querySelector('.header .count');
+  if(countEl) countEl.textContent = channels.length + ' channels';
+
+  var f = document.createDocumentFragment();
+  channels.forEach(function(ch){
+    var a = document.createElement("a");
+    a.className = "ch-card";
+    a.href = "?id=" + encodeURIComponent(ch.id);
+
+    var initials = ch.name.split(' ').slice(0,2).map(w=>w[0]).join('');
+    var placeholderHtml = '<div class="ch-placeholder"><span class="initials">'+initials+'</span></div>';
+
+    a.innerHTML = placeholderHtml + '<span class="ch-name">'+ch.name+'</span>';
+    f.appendChild(a);
+  });
+
+  $grid.innerHTML = '';
+  $grid.appendChild(f);
+}
+
+function renderList(data){
+  hideOverlay();
+  var channels = data.channels || data;
+  allChannels = channels;
+  renderChannels(channels);
+  $list.style.display = "flex";
+  if($tgBadge) $tgBadge.style.display = "inline-flex";
+}
+
+function showPlayer(){
+  $list.style.display = "none";
+  if($tgBadge) $tgBadge.style.display = "none";
+  $playerContainer.style.display = "flex";
+  showOverlay("Connecting stream…");
+}
+
+function hidePlayer(){
+  $list.style.display = "flex";
+  if($tgBadge) $tgBadge.style.display = "inline-flex";
+  $playerContainer.style.display = "none";
+
+  if(resumeTmr) { clearInterval(resumeTmr); resumeTmr = null; }
+  if(currentHls) { try { currentHls.destroy(); } catch(e){} currentHls = null; }
+  if(currentPlayer) { try { currentPlayer.destroy(); } catch(e){} currentPlayer = null; }
+  try { $video.pause(); $video.removeAttribute('src'); $video.load(); } catch(e){}
+
+  if(window.history && window.history.pushState) {
+    window.history.pushState({}, document.title, window.location.pathname);
+  }
+}
+
+function setupHLSPlayer(url){
+  showPlayer();
+  toast("Connecting stream…", "warn", 0);
+
+  if(currentHls) { try { currentHls.destroy(); } catch(e){} currentHls = null; }
+  if(currentPlayer) { try { currentPlayer.destroy(); } catch(e){} currentPlayer = null; }
+
+  var defaultOptions = {
+    controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
+    settings: ['quality'],
+    autoplay: true,
+    muted: true
+  };
+
+  var isM3U8 = /\.m3u8(\?|$)/i.test(url) || url.indexOf('.m3u8') !== -1;
+
+  if(Hls.isSupported() && isM3U8) {
+    var hls = new Hls({
+      autoStartLoad: true,
+      enableWorker: true,
+      lowLatencyMode: true,
+      backbufferLength: 15,
+      maxBufferLength: 30,
+      maxMaxBufferLength: 60,
+      maxBufferSize: 60 * 1000 * 1000,
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 10,
+      manifestLoadingTimeOut: 10000,
+      manifestLoadingMaxRetry: 4,
+      fragLoadingTimeOut: 15000,
+      fragLoadingMaxRetry: 4
+    });
+    currentHls = hls;
+    hls.loadSource(url);
+    hls.attachMedia($video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function(_, data) {
+      var qualities = data.levels.map(l => l.height).filter(h => h).sort((a,b) => b-a);
+      qualities = qualities.filter((v,i) => qualities.indexOf(v) === i);
+
+      currentPlayer = new Plyr($video, Object.assign({}, defaultOptions, qualities.length ? {
+        quality: {
+          default: qualities[0],
+          options: qualities,
+          forced: true,
+          onChange: function(q) {
+            hls.levels.forEach((level, index) => { if(level.height === q) hls.currentLevel = index; });
+          }
+        }
+      } : {}));
+
+      $video.play().catch(function(){});
+      hideOverlay();
+      toast("● Live", "ok", 2500);
+    });
+
+    hls.on(Hls.Events.ERROR, function(_, data) {
+      if(data.fatal) {
+        if(data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          hls.startLoad();
+        } else if(data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+        } else {
+          hls.destroy();
+          setupHLSPlayer(url);
+        }
+      }
+    });
+  } else {
+    $video.src = url;
+    currentPlayer = new Plyr($video, defaultOptions);
+    $video.play().catch(function(){});
+    hideOverlay();
+    toast("● Live", "ok", 2500);
+  }
+
+  if(resumeTmr) clearInterval(resumeTmr);
+  resumeTmr = setInterval(function() {
+    if($video.paused && $video.readyState > 2) $video.play().catch(function(){});
+  }, 2000);
+
+  function unmute() { $video.muted = false; $video.volume = 1; document.removeEventListener("click", unmute); }
+  document.addEventListener("click", unmute);
+}
+
+function errMsg(msg){ showOverlay(msg); toast(msg,"err",0); }
+
+async function main(){
+  var id = getChId();
+  var data;
+  showOverlay("Loading channels…");
+  try {
+    data = await loadData();
+  } catch(e) {
+    errMsg("Connection error.");
+    return;
+  }
+
+  if(!id) { renderList(data); return; }
+
+  var channels = data.channels || data;
+  var ch = channels.find(c => c.id === id);
+  if(!ch) { errMsg("Channel not found."); return; }
+
+  document.title = ch.name + " · CricxCrate";
+  renderList(data);
+  setupHLSPlayer(ch.stream_url);
+}
+
+window.addEventListener("popstate", () => { if($playerContainer.style.display === "flex") hidePlayer(); });
+document.addEventListener("keydown", (e) => { if(e.key === "Escape" && $playerContainer.style.display === "flex") hidePlayer(); });
+document.addEventListener("DOMContentLoaded", main);
+})();
 </script>
-
-</body>
-  </html>
+</html>
